@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <title>Note App</title>
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body class="h-full grid place-items-center">
+  <div id="app">
+    <section>
+        <custom-input v-model="createTask" @add-Item="addItem"></custom-input>             
+    </section>
+    <section v-if="inProgressAssignments.length" class="mt-16 text-center">
+      <h2 class="font-bold text-xl mb-1">In Progress:</h2>
+      <ul>
+       <li v-for="assignment in inProgressAssignments"
+         :key="assignment.id">
+        <label class="border-2 border-black px-4 py-2 rounded-lg shadow-black shadow-md focus:outline-none">
+          {{assignment.name}}
+          <input 
+            class="ml-2 mb-5 mt-4 fa fa-square-o appearance-none" 
+            type="checkbox" 
+            v-model="assignment.complete">
+          <button 
+            @click="deleteItem(assignment.id)" 
+            class="fa fa-trash ml-4"></button>                  
+        </label>
+       </li>
+      </ul>
+    </section>
+    <section v-if="completedAssignments.length" class="mt-4 text-center">
+      <h2 class="font-bold text-xl mb-1 mt-8">Completed:</h2>
+      <ul>
+       <li v-for="assignment in completedAssignments"
+         :key="assignment.id">
+        <label class="border-2 border-black px-4 py-2 rounded-lg shadow-black shadow-md focus:outline-none">
+          {{assignment.name}}
+          <input 
+            class="ml-2 mb-5 mt-4 fa fa fa-check-square-o appearance-none" 
+            type="checkbox" 
+            v-model="assignment.complete">
+          <button 
+            @click="deleteItem(assignment.id)" 
+            class="fa fa-trash ml-4"></button>
+        </label>
+       </li>
+      </ul>
+    </section>    
+  </div>
+  <script>
+    const { createApp } = Vue;
+    const CustomInput = {
+      props: {
+        modelValue: {
+          type: String,
+          default: ''
+        }
+      },
+      emits: ['update:modelValue', 'addItem'],
+      template: ` <input 
+            type="text"
+            :value="modelValue"
+            @input="$emit('update:modelValue', $event.target.value)"
+            class="border-2 border-black px-4 py-2 ml-2 rounded-lg shadow-black shadow-md focus:outline-none" 
+            placeholder="Enter task here"
+            @keyup.enter="$emit('addItem')">
+            <button
+            @click="$emit('addItem')" 
+            class="bg-white hover:bg-gray-200 text-gray-800 font-semibold px-8 py-2 m-4 border border-gray-400 rounded-lg shadow-black shadow-lg focus:bg-gray-200 active:shadow-sm focus:outline-none">
+                Add
+        </button> `
+    };
+
+    const app = createApp({
+      data() {
+        return {            
+            createTask: '',
+             assignments: []
+        }
+    },
+    methods: {
+        addItem() {
+            if (this.createTask.trim() !== '') {
+                this.assignments.push({ 
+                    name: this.createTask, 
+                    complete: false, 
+                    id: Date.now() 
+                });
+                this.createTask = ''; // Clear the input
+            }
+        },
+        deleteItem(id) {
+            this.assignments = this.assignments.filter(assignment => assignment.id !== id);
+            }        
+    },
+    components: {
+      CustomInput
+    },
+    computed: {
+        inProgressAssignments() {
+          return this.assignments.filter(assignment => ! assignment.complete);
+        },
+        completedAssignments() {
+          return this.assignments.filter(assignment => assignment.complete);
+        }
+      }
+    });
+  
+   app.mount('#app');
+  </script>
+</body>
+</html>
